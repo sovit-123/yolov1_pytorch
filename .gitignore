@@ -1,0 +1,4 @@
+model_backup/
+inference_data/
+*.pth
+check_log.txt
