@@ -14,13 +14,14 @@ from config import (
     BATCH_SIZE,
     LEARNING_RATE, 
     IMAGE_SIZE, 
-    NUM_WORKERS
+    NUM_WORKERS,
+    PRETRAINED
 )
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print(device)
 
-base_model = load_base_model(pretrained=True)
+base_model = load_base_model(pretrained=PRETRAINED)
 model = load_yolo_vgg11(base_model, C=C, S=S, B=B).to(device)
 print(model)
 # Total parameters and trainable parameters.

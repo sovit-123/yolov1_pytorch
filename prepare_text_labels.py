@@ -1,5 +1,21 @@
 import xml.etree.ElementTree as ET
 import os
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    '-i', '--root-images', dest='root_images',
+    help='path to the PASCAL VOC images root directory, i.e. \
+          the JPEGImages folder',
+    default='VOCdevkit/VOC2007/JPEGImages'
+)
+parser.add_argument(
+    '-a', '--annotations', 
+    help='path to the PASCAL VOC 2007 annotations directory, i.e \
+          Annotations folder',
+    default='VOCdevkit/VOC2007/Annotations/'
+)
+args = vars(parser.parse_args())
 
 VOC_CLASSES = (
     'aeroplane', 'bicycle', 'bird', 'boat',
@@ -34,8 +50,8 @@ file_sets = [
     ('2007_test.txt', '2007_test_labels.txt')
 ]
 
-root_images = '../xml_od_data/pascal_voc_original/VOCdevkit/VOC2007/JPEGImages'
-annotations = '../xml_od_data/pascal_voc_original/VOCdevkit/VOC2007/Annotations/'
+root_images = args['root_images']
+annotations = args['annotations']
 for i, files in enumerate(file_sets):
     print(files)
     txt_file = open(files[1],'w')
