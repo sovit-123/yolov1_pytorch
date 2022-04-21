@@ -15,11 +15,13 @@ This repository contains YOLOV1 training pipeline on the PASCAL VOC 2007 data us
 
 
 
-***Note: Use this repository/code for any project/learning with/without attribution. Completely OPEN for any use.*** 
+## ***Note: Use this repository/code for any project/learning with/without attribution. Completely OPEN for any use.*** 
 
 
 
-## First of All, Download and Extract the Data
+## Steps to Train
+
+### First of All, Download and Extract the Data
 
 * [Download VOC 2007 trainval from here](http://host.robots.ox.ac.uk/pascal/VOC/voc2007/VOCtrainval_06-Nov-2007.tar).
 * [Download VOC 2007 test from here](http://host.robots.ox.ac.uk/pascal/VOC/voc2007/VOCtest_06-Nov-2007.tar).
@@ -30,17 +32,27 @@ Execute the following commands in the directory where the downloaded `.tar` file
 tar xvf VOCtrainval_06-Nov-2007.tar
 ```
 
+Or `wget http://host.robots.ox.ac.uk/pascal/VOC/voc2007/VOCtrainval_06-Nov-2007.tar` in terminal.
+
 ```
 tar xvf VOCtest_06-Nov-2007.tar 
 ```
 
-* Then execute `prepare_data.py` with the correct path argument to the `VOCdevkit` parent directory. The following is an example:
+Or `wget http://host.robots.ox.ac.uk/pascal/VOC/voc2007/VOCtest_06-Nov-2007.tar` in terminal.
+
+### Prepare the Text Files and Labels
+
+Then execute `prepare_data.py` with the correct path argument to the `VOCdevkit` parent directory. The following is an example:
 
 ```
 python prepare_data.py --path ../xml_od_data/pascal_voc_original/
 ```
 
-* Then execute `prepare_text_labels.py`.
+* Then execute `prepare_text_labels.py` with correct command line argument paths to the VOC 2007 `Images` and `Annotations` directory. See `[text_labels.py](https://github.com/sovit-123/yolov1_pytorch_voc07/blob/main/prepare_text_labels.py)`  to know what the exact path should be.
+
+### Train
+
+* Execute `python train.py`. 
 
 
 
@@ -48,5 +60,3 @@ python prepare_data.py --path ../xml_od_data/pascal_voc_original/
 
 * [YOLOv1 paper](https://arxiv.org/pdf/1506.02640v5.pdf): https://arxiv.org/pdf/1506.02640v5.pdf
 * Some dataset preparation ideas borrowed from: https://github.com/aladdinpersson/Machine-Learning-Collection/blob/master/ML/Pytorch/object_detection/YOLO/dataset.py
-# yolov1_pytorch_voc07
-# yolov1_pytorch_voc07
