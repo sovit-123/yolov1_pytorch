@@ -2,7 +2,7 @@ from tabnanny import verbose
 import torch
 import numpy as np
 
-from models.yolov1_vgg11 import load_base_model, load_yolo_vgg11
+from models.mini_vgg import load_base_model, load_yolo_vgg11
 from loss import YOLOLoss
 from dataset import DetectionDataset
 from transforms import get_tensor_transform

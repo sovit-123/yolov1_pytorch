@@ -11,11 +11,18 @@ class VGG11(nn.Module):
         self.num_classes = num_classes
         # Convolutional layers 
         self.features = nn.Sequential(
-            nn.Conv2d(self.in_channels, 64, kernel_size=3, padding=1),
+            nn.Conv2d(self.in_channels, 32, kernel_size=3, padding=1),
+            nn.BatchNorm2d(32),
+            nn.ReLU(),
+            nn.MaxPool2d(kernel_size=2, stride=2),
+            nn.Conv2d(32, 64, kernel_size=3, padding=1),
             nn.BatchNorm2d(64),
             nn.ReLU(),
             nn.MaxPool2d(kernel_size=2, stride=2),
             nn.Conv2d(64, 128, kernel_size=3, padding=1),
+            nn.BatchNorm2d(128),
+            nn.ReLU(),
+            nn.Conv2d(128, 128, kernel_size=3, padding=1),
             nn.BatchNorm2d(128),
             nn.ReLU(),
             nn.MaxPool2d(kernel_size=2, stride=2),
@@ -26,18 +33,11 @@ class VGG11(nn.Module):
             nn.BatchNorm2d(256),
             nn.ReLU(),
             nn.MaxPool2d(kernel_size=2, stride=2),
-            nn.Conv2d(256, 512, kernel_size=3, padding=1),
-            nn.BatchNorm2d(512),
+            nn.Conv2d(256, 256, kernel_size=3, padding=1),
+            nn.BatchNorm2d(256),
             nn.ReLU(),
-            nn.Conv2d(512, 512, kernel_size=3, padding=1),
-            nn.BatchNorm2d(512),
-            nn.ReLU(),
-            nn.MaxPool2d(kernel_size=2, stride=2),
-            nn.Conv2d(512, 512, kernel_size=3, padding=1),
-            nn.BatchNorm2d(512),
-            nn.ReLU(),
-            nn.Conv2d(512, 512, kernel_size=3, padding=1),
-            nn.BatchNorm2d(512),
+            nn.Conv2d(256, 256, kernel_size=3, padding=1),
+            nn.BatchNorm2d(256),
             nn.ReLU(),
             nn.MaxPool2d(kernel_size=2, stride=2)
         )
@@ -46,7 +46,7 @@ class VGG11(nn.Module):
 
         # Fully connected linear layers.
         self.classifier = nn.Sequential(
-            nn.Linear(in_features=512*7*7, out_features=4096),
+            nn.Linear(in_features=256*7*7, out_features=4096),
             nn.ReLU(),
             nn.Dropout2d(0.5),
             nn.Linear(in_features=4096, out_features=4096),
@@ -90,20 +90,20 @@ class YOLOVGG11(nn.Module):
         # The authors add four Conv2D layers to the classification
         # backbone, followed by two fully connected layers.
         self.yolo_head = nn.Sequential(
-            nn.Conv2d(512, 1024, kernel_size=3),
+            nn.Conv2d(256, 512, kernel_size=3),
             nn.ReLU(),
-            nn.Conv2d(1024, 1024, kernel_size=3),
+            nn.Conv2d(512, 512, kernel_size=3),
             nn.ReLU(),
-            nn.Conv2d(1024, 1024, kernel_size=3),
+            nn.Conv2d(512, 512, kernel_size=3),
             nn.ReLU(),
-            nn.Conv2d(1024, 1024, kernel_size=3),
+            nn.Conv2d(512, 512, kernel_size=3),
             nn.ReLU(),
             nn.AdaptiveAvgPool2d(output_size=(1, 1)),
             nn.Flatten(),
-            nn.Linear(1024, 4096),
+            nn.Linear(512, 1024),
             nn.Dropout(0.5),
             nn.ReLU(),
-            nn.Linear(4096, S * S * (C + B * 5))
+            nn.Linear(1024, S * S * (C + B * 5))
         )
 
     def forward(self, x):
