@@ -2,5 +2,5 @@
 [] Data transform and augmentations. 
 [] Can we get the loading of bounding boxes and labels from __init__  
    to __getitem__ in the dataset loading?
-[*] Remove Flatten from heads and use AdaptiveAvgPool2D.
-[*] Move training and validation loops to training_utils.py.
+[DONE] Remove Flatten from heads and use AdaptiveAvgPool2D.
+[DONE] Move training and validation loops to training_utils.py.

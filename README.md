@@ -24,7 +24,11 @@ This repository contains YOLOV1 training pipeline on the PASCAL VOC 2007 data us
 ### First of All, Download and Extract the Data
 
 * [Download VOC 2007 trainval from here](http://host.robots.ox.ac.uk/pascal/VOC/voc2007/VOCtrainval_06-Nov-2007.tar).
+  * Or `wget http://host.robots.ox.ac.uk/pascal/VOC/voc2007/VOCtrainval_06-Nov-2007.tar` in terminal.
+
 * [Download VOC 2007 test from here](http://host.robots.ox.ac.uk/pascal/VOC/voc2007/VOCtest_06-Nov-2007.tar).
+  * Or `wget http://host.robots.ox.ac.uk/pascal/VOC/voc2007/VOCtest_06-Nov-2007.tar` in terminal.
+
 
 Execute the following commands in the directory where the downloaded `.tar` files are present.
 
@@ -32,13 +36,9 @@ Execute the following commands in the directory where the downloaded `.tar` file
 tar xvf VOCtrainval_06-Nov-2007.tar
 ```
 
-Or `wget http://host.robots.ox.ac.uk/pascal/VOC/voc2007/VOCtrainval_06-Nov-2007.tar` in terminal.
-
 ```
 tar xvf VOCtest_06-Nov-2007.tar 
 ```
-
-Or `wget http://host.robots.ox.ac.uk/pascal/VOC/voc2007/VOCtest_06-Nov-2007.tar` in terminal.
 
 ### Prepare the Text Files and Labels
 
