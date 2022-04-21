@@ -1,4 +1,3 @@
-from matplotlib.pyplot import axis
 import torch
 
 def intersection_over_union(

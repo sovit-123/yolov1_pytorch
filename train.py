@@ -1,7 +1,8 @@
+from tabnanny import verbose
 import torch
 import numpy as np
 
-from yolov1_vgg11 import load_base_model, load_yolo_vgg11
+from models.yolov1_vgg11 import load_base_model, load_yolo_vgg11
 from loss import YOLOLoss
 from dataset import DetectionDataset
 from transforms import get_tensor_transform
@@ -66,18 +67,27 @@ if __name__ == '__main__':
         shuffle=False, num_workers=NUM_WORKERS
     )
 
+    # To increase the learning rate slowly till 30 epochs.
     scheduler_up = MultiStepLR(
         optimizer, 
-        [5, 10, 15], 
-        gamma=2.25, verbose=True
+        [
+            1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 
+            11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+            21, 22, 23, 24, 25, 26, 27, 28, 29, 30
+        ], 
+        gamma=1.07977778, verbose=True
+    )
+    # To decrease the learning rate at 75 and 105 epochs.
+    scheduler_down = MultiStepLR(
+        optimizer,
+        [75, 105],
+        gamma=0.1, verbose=True
     )
 
     num_iter = 0
     best_valid_loss = np.inf
     for epoch in range(NUM_EPOCHS):
         
-        # print(f"Current learning rate: {LEARNING_RATE}")
-
         # Training.
         train(
             model, train_loader, criterion, 
@@ -92,7 +102,7 @@ if __name__ == '__main__':
             print(f"\nNew best validation loss: {best_valid_loss}")
             print('Saving best model...')
             torch.save(model.state_dict(),'best.pth')   
-        print(f"Saving model for epoch {epoch+1}")
+        print(f"Saving model for epoch {epoch+1}\n")
         torch.save(model.state_dict(),'last.pth')
         scheduler_up.step()
-        
+        scheduler_down.step()

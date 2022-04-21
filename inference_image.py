@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 
-from yolov1_vgg11 import load_base_model, load_yolo_vgg11
+from models.yolov1_vgg11 import load_base_model, load_yolo_vgg11
 from utils import cellboxes_to_boxes, non_max_suppression
 from config import S
 
