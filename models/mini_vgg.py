@@ -4,9 +4,9 @@ import torch.utils.model_zoo as model_zoo
 import torch
 
 # The VGG11 model.
-class VGG11(nn.Module):
+class MiniVGG11(nn.Module):
     def __init__(self, in_channels, num_classes=1000, pretrained=False):
-        super(VGG11, self).__init__()
+        super(MiniVGG11, self).__init__()
         self.in_channels = in_channels
         self.num_classes = num_classes
         # Convolutional layers 
@@ -112,7 +112,7 @@ class YOLOVGG11(nn.Module):
         return x
 
 def load_base_model(pretrained=False):
-    vgg11 = VGG11(3, pretrained=pretrained)
+    vgg11 = MiniVGG11(3, pretrained=pretrained)
     if not pretrained:
         print('Not loading pretrained weights...')
     if pretrained:

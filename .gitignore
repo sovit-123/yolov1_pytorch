@@ -3,3 +3,5 @@ inference_data/
 *pycache*
 *.pth
 check_log.txt
+loss.png
+accuracy.png

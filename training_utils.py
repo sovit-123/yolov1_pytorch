@@ -24,6 +24,7 @@ def train(
                 f"Iteration: {i+1}/{len(data_loader)},",
                 f"Loss: {loss.item():.4f}, Average Loss: {average_loss:.4f}"
             )
+    return total_loss/len(data_loader)
 
 def validate(model, data_loader, criterion, device='cuda'):
     print('VALIDATING')

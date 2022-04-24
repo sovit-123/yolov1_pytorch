@@ -2,7 +2,7 @@ from tabnanny import verbose
 import torch
 import numpy as np
 
-from models.mini_vgg import load_base_model, load_yolo_vgg11
+from models.yolov1_vgg11 import load_base_model, load_yolo_vgg11
 from loss import YOLOLoss
 from dataset import DetectionDataset
 from transforms import get_tensor_transform
@@ -18,6 +18,7 @@ from config import (
     NUM_WORKERS,
     PRETRAINED
 )
+from utils import plot_loss
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print(device)
@@ -86,16 +87,20 @@ if __name__ == '__main__':
 
     num_iter = 0
     best_valid_loss = np.inf
+    train_loss, valid_loss = [], []
     for epoch in range(NUM_EPOCHS):
         
         # Training.
-        train(
+        training_loss = train(
             model, train_loader, criterion, 
             optimizer, epoch, NUM_EPOCHS, device
         )
 
         # Validation.
         validation_loss = validate(model, valid_loader, criterion, device)
+
+        train_loss.append(training_loss)
+        valid_loss.append(validation_loss)
 
         if best_valid_loss > validation_loss:
             best_valid_loss = validation_loss
@@ -106,3 +111,5 @@ if __name__ == '__main__':
         torch.save(model.state_dict(),'last.pth')
         scheduler_up.step()
         scheduler_down.step()
+
+        plot_loss(train_loss, valid_loss)

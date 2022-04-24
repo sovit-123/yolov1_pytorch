@@ -1,4 +1,25 @@
 import torch
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+
+def detect(model, image, threshold, S):
+    image = cv2.resize(image, (448, 448))
+    image = np.transpose(image, (2, 0, 1))
+    image = torch.tensor(image, dtype=torch.float32)
+    image = torch.unsqueeze(image, axis=0)
+    outputs = model(image)
+    bboxes = cellboxes_to_boxes(outputs, S=S)
+    batch_size = image.shape[0]
+    for idx in range(batch_size):
+        nms_boxes = non_max_suppression(
+            bboxes[idx],
+            iou_threshold=0.5,
+            box_format='midpoint',
+        )
+        # Filter out the boxes based on confidence score.
+        nms_boxes = [box for box in nms_boxes if box[1] > threshold]
+    return nms_boxes
 
 def intersection_over_union(
     boxes_preds, boxes_labels, 
@@ -137,6 +158,23 @@ def non_max_suppression(bboxes, iou_threshold, box_format="corners"):
         bboxes_after_nms.append(chosen_box)
 
     return bboxes_after_nms
+
+def plot_loss(train_loss, valid_loss):
+    # Loss plots.
+    plt.figure(figsize=(10, 7))
+    plt.plot(
+        train_loss, color='orange', linestyle='-', 
+        label='train loss'
+    )
+    plt.plot(
+        valid_loss, color='red', linestyle='-', 
+        label='validataion loss'
+    )
+    plt.xlabel('Epochs')
+    plt.ylabel('Loss')
+    plt.legend()
+    plt.savefig(f"loss.png")
+    plt.close()
 
 def main():
     boxes_preds = torch.tensor([200, 300, 400, 500])
