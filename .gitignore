@@ -1,5 +1,7 @@
 model_backup/
-inference_data/
+inference_data/*.jpg
+inference_data/*.png
+inference_data/*.mp4
 outputs/
 *pycache*
 *.pth
