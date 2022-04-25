@@ -1,5 +1,6 @@
 model_backup/
 inference_data/
+outputs/
 *pycache*
 *.pth
 check_log.txt

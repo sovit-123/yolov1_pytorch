@@ -3,12 +3,23 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 
-def detect(model, image, threshold, S):
+def detect(model, image, threshold, S, device):
+    """
+    Run detection for inference.
+
+    :param model: The neural network model.
+    :param image: Image NumPy array in RGB format.
+    :param threshold: Detection threshold for filtering boxes.
+    :param S: Grid size, default S = 7.
+
+    Returns:
+        nms_boxes: Detected boxes after Non-Max Suppression.
+    """
     image = cv2.resize(image, (448, 448))
     image = np.transpose(image, (2, 0, 1))
     image = torch.tensor(image, dtype=torch.float32)
     image = torch.unsqueeze(image, axis=0)
-    outputs = model(image)
+    outputs = model(image.to(device))
     bboxes = cellboxes_to_boxes(outputs, S=S)
     batch_size = image.shape[0]
     for idx in range(batch_size):
@@ -175,6 +186,37 @@ def plot_loss(train_loss, valid_loss):
     plt.legend()
     plt.savefig(f"loss.png")
     plt.close()
+
+def draw_boxes(image, boxes):
+    """
+    Draw bounding boxes around an image.
+
+    :param image: NumPy array image in RGB format.
+    :param boxes: NMS appied bounding boxes. Shape is [N, 6].
+        Normalized box coordinates start from index 2 in the format of
+        [x_center, y_center, normalized width, normalized height].
+
+    Returns:
+        image: NumPy array image with bounding boxes drawn.
+    """
+    image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+    # Get the original image height and width.
+    height, width, _ = image.shape
+    for box in boxes:
+        box = box[2:]
+        x_min = (box[0] - box[2] / 2) * width
+        y_min = (box[1] - box[3] / 2) * height
+        x_max = x_min + (box[2] * width)
+        y_max = y_min + (box[3] * height)
+        cv2.rectangle(
+            image,
+            (int(x_min), int(y_min)),
+            (int(x_max), int(y_max)),
+            (0, 0, 255),
+            1, cv2.LINE_AA
+        )
+    return image
+
 
 def main():
     boxes_preds = torch.tensor([200, 300, 400, 500])
