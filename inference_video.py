@@ -60,7 +60,7 @@ while(cap.isOpened()):
 
         start_time = time.time()
         # Run detection.
-        nms_boxes = detect(
+        nms_boxes, scores = detect(
             model, image, args['threshold'], 
             S=S, device=device
         )

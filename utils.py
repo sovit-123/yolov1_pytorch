@@ -1,4 +1,5 @@
 import torch
+import torchvision
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
@@ -11,26 +12,40 @@ def detect(model, image, threshold, S, device):
     :param image: Image NumPy array in RGB format.
     :param threshold: Detection threshold for filtering boxes.
     :param S: Grid size, default S = 7.
+    :param device: The computation device (GPU or CPU).
 
     Returns:
         nms_boxes: Detected boxes after Non-Max Suppression.
+        score_list: The score list corresponding to the final `nms_boxes`.
     """
+    corner_list = [] # List to store coordinates in x1, x2, y1, y2 format.
+    score_list = [] # List to store corresponding scores.
+    orig_image = image.copy()
+    height, width, _ = orig_image.shape
     image = cv2.resize(image, (448, 448))
     image = np.transpose(image, (2, 0, 1))
     image = torch.tensor(image, dtype=torch.float32)
     image = torch.unsqueeze(image, axis=0)
     outputs = model(image.to(device))
     bboxes = cellboxes_to_boxes(outputs, S=S)
-    batch_size = image.shape[0]
-    for idx in range(batch_size):
-        nms_boxes = non_max_suppression(
-            bboxes[idx],
-            iou_threshold=0.5,
-            box_format='midpoint',
+
+    for i, bbox in enumerate(bboxes[0]):
+        x1, y1, x2, y2 = yolo2bbox(bbox[2:], width, height)
+        # Check that all coordinates are > 0 and score > threshold.
+        if x1 > 0 and x2 > 0 and y1 > 0 and y2 > 0 and bbox[1] > threshold:
+            corner_list.append([x1, y1, x2, y2])
+            score_list.append(bbox[1])
+    if len(corner_list) > 0:
+        nms_indices = torchvision.ops.nms(
+            torch.tensor(corner_list), 
+            torch.tensor(score_list),
+            iou_threshold=0.5
         )
-        # Filter out the boxes based on confidence score.
-        nms_boxes = [box for box in nms_boxes if box[1] > threshold]
-    return nms_boxes
+        nms_boxes = [corner_list[i] for i in nms_indices]
+        final_scores = [score_list[i] for i in nms_indices]
+        return nms_boxes, final_scores
+    else:
+        return [], []
 
 def intersection_over_union(
     boxes_preds, boxes_labels, 
@@ -132,44 +147,6 @@ def cellboxes_to_boxes(out, S=7):
 
     return all_bboxes
 
-# Borrowed/adapted from:
-# https://github.com/aladdinpersson/Machine-Learning-Collection/blob/master/ML/Pytorch/object_detection/YOLO/utils.py
-def non_max_suppression(bboxes, iou_threshold, box_format="corners"):
-    """
-    Does Non Max Suppression given bboxes
-
-    :param bboxes (list): list of lists containing all bboxes with each bboxes
-    :param specified as [class_pred, prob_score, x1, y1, x2, y2]
-    :param iou_threshold (float): threshold where predicted bboxes is correct
-    :param box_format (str): "midpoint" or "corners" used to specify bboxes
-    Returns:
-        list: bboxes after performing NMS given a specific IoU threshold
-    """
-
-    assert type(bboxes) == list
-
-    bboxes = sorted(bboxes, key=lambda x: x[1], reverse=True)
-    bboxes_after_nms = []
-
-    while bboxes:
-        chosen_box = bboxes.pop(0)
-
-        bboxes = [
-            box
-            for box in bboxes
-            if box[0] != chosen_box[0]
-            or intersection_over_union(
-                torch.tensor(chosen_box[2:]),
-                torch.tensor(box[2:]),
-                box_format=box_format,
-            )
-            < iou_threshold
-        ]
-
-        bboxes_after_nms.append(chosen_box)
-
-    return bboxes_after_nms
-
 def plot_loss(train_loss, valid_loss):
     # Loss plots.
     plt.figure(figsize=(10, 7))
@@ -201,13 +178,8 @@ def draw_boxes(image, boxes):
     """
     image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
     # Get the original image height and width.
-    height, width, _ = image.shape
     for box in boxes:
-        box = box[2:]
-        x_min = (box[0] - box[2] / 2) * width
-        y_min = (box[1] - box[3] / 2) * height
-        x_max = x_min + (box[2] * width)
-        y_max = y_min + (box[3] * height)
+        x_min, y_min, x_max, y_max = box
         cv2.rectangle(
             image,
             (int(x_min), int(y_min)),
@@ -216,6 +188,22 @@ def draw_boxes(image, boxes):
             1, cv2.LINE_AA
         )
     return image
+
+def yolo2bbox(bboxes, width, height):
+    """
+    Function to convert bounding boxes in YOLO format to 
+    xmin, ymin, xmax, ymax.
+    
+    Parmaeters:
+    :param bboxes: Normalized [x_center, y_center, width, height] list
+    :param width: Original width of the image.
+    :param height: Original height of the image.
+
+    return: xmin, ymin, xmax, ymax relative to original image size.
+    """
+    xmin, ymin = (bboxes[0]-bboxes[2]/2) * width, (bboxes[1]-bboxes[3]/2) * height
+    xmax, ymax = (bboxes[0]+bboxes[2]/2) * width, (bboxes[1]+bboxes[3]/2) * height
+    return xmin, ymin, xmax, ymax
 
 
 def main():

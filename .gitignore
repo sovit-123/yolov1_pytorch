@@ -1,4 +1,4 @@
-model_backup/
+backup/
 inference_data/*.jpg
 inference_data/*.png
 inference_data/*.mp4

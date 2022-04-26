@@ -17,13 +17,15 @@ parser.add_argument(
 )
 args = vars(parser.parse_args())
 
+device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+
 # Load model and weights.
 base_model = load_base_model(pretrained=False)
 model = load_yolo_vgg11(base_model, C=C, S=S, B=B)
 print('Loading trained YOLO model weights...\n')
 checkpoint = torch.load('best.pth')
 model.load_state_dict(checkpoint)
-model.eval()
+model.to(device).eval()
 
 # Read and prepare image.
 image = cv2.imread(args['input'])
@@ -31,8 +33,8 @@ orig_image = image.copy()
 image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
 # Run detection.
-nms_boxes = detect(model, image, args['threshold'], S=S)
-print(nms_boxes)
+nms_boxes, scores = detect(model, image, args['threshold'], S=S, device=device)
+# print(nms_boxes)
 
 result = draw_boxes(image, nms_boxes)
 cv2.imshow('Result', result)

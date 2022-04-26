@@ -104,9 +104,27 @@ class DetectionDataset(data.Dataset):
 if __name__ == '__main__':
     import transforms
     transform = transforms.get_tensor_transform()
-    dataset = DetectionDataset(
-        image_size=448, file='2007_val_labels.txt', 
+    train_dataset = DetectionDataset(
+        image_size=448, file='2007_train_labels.txt', 
         train=True, transform=transform, S=7, C=20, B=2
     )
-    for i in range(len(dataset[1][1])): # Index 1 indicates image 000007.jpg in valid set.
-        print(dataset[1][1][i])
+    
+    train_loader = torch.utils.data.DataLoader(
+        dataset=train_dataset, batch_size=4,
+        shuffle=True, num_workers=4
+    )
+
+    def get_mean_and_std(dataloader):
+        channels_sum, channels_squared_sum, num_batches = 0, 0, 0
+        for data, _ in dataloader:
+            channels_sum += torch.mean(data, dim=[0,2,3])
+            channels_squared_sum += torch.mean(data**2, dim=[0,2,3])
+            num_batches += 1
+        
+        mean = channels_sum / num_batches
+        std = (channels_squared_sum / num_batches - mean ** 2) ** 0.5
+
+        return mean, std
+    
+    mean, std = get_mean_and_std(train_loader)
+    print(f"Mean: {mean} ::: Std: {std}")

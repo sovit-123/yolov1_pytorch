@@ -1,4 +1,3 @@
-from tabnanny import verbose
 import torch
 import numpy as np
 
@@ -68,15 +67,17 @@ if __name__ == '__main__':
         shuffle=False, num_workers=NUM_WORKERS
     )
 
-    # To increase the learning rate slowly till 30 epochs.
+    # To increase the learning rate slowly till 50 epochs.
     scheduler_up = MultiStepLR(
         optimizer, 
         [
             1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 
             11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
-            21, 22, 23, 24, 25, 26, 27, 28, 29, 30
+            21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
+            31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
+            41, 42, 43, 44, 45, 46, 47, 48, 49, 50
         ], 
-        gamma=1.07977778, verbose=True
+        gamma=1.047128548, verbose=True
     )
     # To decrease the learning rate at 75 and 105 epochs.
     scheduler_down = MultiStepLR(
@@ -110,6 +111,6 @@ if __name__ == '__main__':
         print(f"Saving model for epoch {epoch+1}\n")
         torch.save(model.state_dict(),'last.pth')
         scheduler_up.step()
-        scheduler_down.step()
+        # scheduler_down.step()
 
         plot_loss(train_loss, valid_loss)
