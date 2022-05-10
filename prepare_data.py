@@ -5,7 +5,7 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument(
     '-p', '--path', 
-    help='path to the PASCAL VOC 2007 root directory, \
+    help='path to the PASCAL VOC 2007/2012 root directory, \
           the next directory after this should be VOCdevkit, \
           so, if you have path as my_voc_data/VOCdevkit, \
           provide this argument as my_voc_data',
@@ -13,7 +13,7 @@ parser.add_argument(
 )
 args = vars(parser.parse_args())
 
-sets=[('2007', 'train'), ('2007', 'val'), ('2007', 'test')]
+sets=[('2012', 'train'), ('2012', 'val'), ('2007', 'train'), ('2007', 'val'), ('2007', 'test')]
 
 classes = ["aeroplane", "bicycle", "bird", "boat", "bottle", "bus", "car", "cat", "chair", "cow", "diningtable", "dog", "horse", "motorbike", "person", "pottedplant", "sheep", "sofa", "train", "tvmonitor"]
 
@@ -63,4 +63,3 @@ for year, image_set in sets:
         list_file.write('%s/VOCdevkit/VOC%s/JPEGImages/%s.jpg\n'%(wd, year, image_id))
         convert_annotation(year, image_id)
     list_file.close()
-

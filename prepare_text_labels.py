@@ -1,19 +1,20 @@
+from __future__ import annotations
 import xml.etree.ElementTree as ET
 import os
 import argparse
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
-    '-i', '--root-images', dest='root_images',
-    help='path to the PASCAL VOC images root directory, i.e. \
-          the JPEGImages folder',
-    default='VOCdevkit/VOC2007/JPEGImages'
-)
-parser.add_argument(
-    '-a', '--annotations', 
+    '-a07', '--annotations-2007', dest='annotations_2007',
     help='path to the PASCAL VOC 2007 annotations directory, i.e \
           Annotations folder',
     default='VOCdevkit/VOC2007/Annotations/'
+)
+parser.add_argument(
+    '-a12', '--annotations-2012', dest='annotations_2012',
+    help='path to the PASCAL VOC 2012 annotations directory, i.e \
+          Annotations folder',
+    default='VOCdevkit/VOC2012/Annotations/'
 )
 args = vars(parser.parse_args())
 
@@ -45,13 +46,10 @@ def parse_rec(filename):
     return objects
 
 file_sets = [
-    ('2007_train.txt', '2007_train_labels.txt'),
-    ('2007_val.txt', '2007_val_labels.txt'),
+    ('train.txt', 'train_labels.txt'),
     ('2007_test.txt', '2007_test_labels.txt')
 ]
 
-root_images = args['root_images']
-annotations = args['annotations']
 for i, files in enumerate(file_sets):
     print(files)
     txt_file = open(files[1],'w')
@@ -59,7 +57,11 @@ for i, files in enumerate(file_sets):
     lines = test_file.readlines()
     lines = [x[:-1] for x in lines]
 
-    xml_files = os.listdir(annotations)
+    if files[0] == 'train.txt':
+        xml_files = os.listdir(args['annotations_2012'])
+        xml_files.extend(os.listdir(args['annotations_2007']))
+    else:
+        xml_files = os.listdir(args['annotations_2007'])
 
     count = 0
     for line in lines:
@@ -67,7 +69,11 @@ for i, files in enumerate(file_sets):
         image_path = line
         print(image_path)
         xml_file = line.split(os.path.sep)[-1].split('.')[0] + '.xml'
-        results = parse_rec(annotations + xml_file)
+        print(xml_file)
+        results = parse_rec(
+            '/'.join(image_path.split(os.path.sep)[:-2]) + \
+            '/Annotations/' + xml_file
+        )
         if len(results)==0:
             print(xml_file)
             continue

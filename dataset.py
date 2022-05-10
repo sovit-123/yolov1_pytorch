@@ -105,26 +105,32 @@ if __name__ == '__main__':
     import transforms
     transform = transforms.get_tensor_transform()
     train_dataset = DetectionDataset(
-        image_size=448, file='2007_train_labels.txt', 
+        image_size=448, file='train_labels.txt', 
         train=True, transform=transform, S=7, C=20, B=2
     )
     
-    train_loader = torch.utils.data.DataLoader(
-        dataset=train_dataset, batch_size=4,
-        shuffle=True, num_workers=4
+    loader = torch.utils.data.DataLoader(
+        dataset=train_dataset, batch_size=1,
+        shuffle=True, num_workers=1
     )
 
-    def get_mean_and_std(dataloader):
-        channels_sum, channels_squared_sum, num_batches = 0, 0, 0
-        for data, _ in dataloader:
-            channels_sum += torch.mean(data, dim=[0,2,3])
-            channels_squared_sum += torch.mean(data**2, dim=[0,2,3])
-            num_batches += 1
-        
-        mean = channels_sum / num_batches
-        std = (channels_squared_sum / num_batches - mean ** 2) ** 0.5
+    def batch_mean_and_sd(loader):
+        cnt = 0
+        fst_moment = torch.empty(3)
+        snd_moment = torch.empty(3)
 
-        return mean, std
-    
-    mean, std = get_mean_and_std(train_loader)
-    print(f"Mean: {mean} ::: Std: {std}")
+        for images, _ in loader:
+            b, c, h, w = images.shape
+            nb_pixels = b * h * w
+            sum_ = torch.sum(images, dim=[0, 2, 3])
+            sum_of_square = torch.sum(images ** 2,
+                                    dim=[0, 2, 3])
+            fst_moment = (cnt * fst_moment + sum_) / (cnt + nb_pixels)
+            snd_moment = (cnt * snd_moment + sum_of_square) / (cnt + nb_pixels)
+            cnt += nb_pixels
+
+        mean, std = fst_moment, torch.sqrt(snd_moment - fst_moment ** 2)        
+        return mean,std
+  
+    mean, std = batch_mean_and_sd(loader)
+    print("mean and std: \n", mean, std)

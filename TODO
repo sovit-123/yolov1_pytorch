@@ -7,3 +7,4 @@
 [] Add Mini VGG by pretraining on TinyImageNet.
 [] Add Mini ResNet by pretraining on TinyImageNet.
 [] Add Mini VGG and Mini ResNet pretrained weights in releases.
+[] mAP for tet dataset.

@@ -1,5 +1,6 @@
 import torch
 import numpy as np
+import argparse
 
 from models.yolov1_vgg11 import load_base_model, load_yolo_vgg11
 from loss import YOLOLoss
@@ -19,11 +20,22 @@ from config import (
 )
 from utils import plot_loss
 
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    '-w', '--weights', default=None,
+    help='path to weights if wanting to resume training'
+)
+args = vars(parser.parse_args())
+
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print(device)
 
 base_model = load_base_model(pretrained=PRETRAINED)
 model = load_yolo_vgg11(base_model, C=C, S=S, B=B).to(device)
+if args['weights'] is not None:
+    print('Loading weights to resume training...')
+    checkpoint = torch.load(args['weights'])
+    model.load_state_dict(checkpoint)
 print(model)
 # Total parameters and trainable parameters.
 total_params = sum(p.numel() for p in model.parameters())
@@ -41,14 +53,14 @@ optimizer = torch.optim.SGD(
 
 train_dataset = DetectionDataset(
     image_size=IMAGE_SIZE, 
-    file='2007_train_labels.txt',
+    file='train_labels.txt',
     train=True, 
     transform=get_tensor_transform(),
     S=S, C=C, B=B
 )
 valid_dataset = DetectionDataset(
     image_size=IMAGE_SIZE, 
-    file='2007_val_labels.txt',
+    file='2007_test_labels.txt',
     train=False, 
     transform=get_tensor_transform(),
     S=S, C=C, B=B
@@ -82,7 +94,7 @@ if __name__ == '__main__':
     # To decrease the learning rate at 75 and 105 epochs.
     scheduler_down = MultiStepLR(
         optimizer,
-        [75, 105],
+        [160, 195],
         gamma=0.1, verbose=True
     )
 
