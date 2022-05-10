@@ -1,8 +1,8 @@
-# A Simple YOLOV1 Training Pipeline on the PASCAL VOC 2007 Data using the PyTorch Framework
+# A Simple YOLOV1 Training Pipeline on the PASCAL VOC Data using the PyTorch Framework
 
 
 
-This repository contains YOLOV1 training pipeline on the PASCAL VOC 2007 data using the PyTorch framework. **A few points:**
+This repository contains YOLOV1 training pipeline on the PASCAL VOC 2007 and 2012 data using the PyTorch framework. **A few points:**
 
 * This respository can be used for understanding the entire YOLOV1 training pipeline, starting from:
   * Dataset creation.
