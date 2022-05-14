@@ -28,27 +28,42 @@ This repository contains YOLOV1 training pipeline on the PASCAL VOC 2007 and 201
 
 * [Download VOC 2007 test from here](http://host.robots.ox.ac.uk/pascal/VOC/voc2007/VOCtest_06-Nov-2007.tar).
   * Or `wget http://host.robots.ox.ac.uk/pascal/VOC/voc2007/VOCtest_06-Nov-2007.tar` in terminal.
+* [Download the VOC 2012 trainval from here](http://host.robots.ox.ac.uk/pascal/VOC/voc2012/VOCtrainval_11-May-2012.tar).
+  * Or `wget http://host.robots.ox.ac.uk/pascal/VOC/voc2012/VOCtrainval_11-May-2012.tar`
+
 
 
 Execute the following commands in the directory where the downloaded `.tar` files are present.
 
 ```
-tar xvf VOCtrainval_06-Nov-2007.tar
+tar xf VOCtrainval_06-Nov-2007.tar
 ```
 
 ```
-tar xvf VOCtest_06-Nov-2007.tar 
+tar xf VOCtest_06-Nov-2007.tar 
 ```
+
+```
+tar xf VOCtrainval_11-May-2012.tar
+```
+
+
 
 ### Prepare the Text Files and Labels
 
-Then execute `prepare_data.py` with the correct path argument to the `VOCdevkit` parent directory. The following is an example:
+* Then execute `prepare_data.py` with the correct path argument to the `VOCdevkit` parent directory. Simply, the next folder after the path in the arugment should be `VOCdevkit` The following is an example:
 
-```
-python prepare_data.py --path ../xml_od_data/pascal_voc_original/
-```
+  ```
+  python prepare_data.py --path my_pacal_voc_data
+  ```
 
-* Then execute `prepare_text_labels.py` with correct command line argument paths to the VOC 2007 `Images` and `Annotations` directory. See `[text_labels.py](https://github.com/sovit-123/yolov1_pytorch_voc07/blob/main/prepare_text_labels.py)`  to know what the exact path should be.
+* Then execute `prepare_text_labels.py` with correct command line argument paths to the VOC 2007  and 2012  `Annotations` directory. See [`text_labels.py`](https://github.com/sovit-123/yolov1_pytorch_voc07/blob/main/prepare_text_labels.py) to know what the exact path should be. Example command:
+
+  ```
+  python prepare_text_labels.py --annotations-2007 VOCdevkit/VOC2007/Annotations/ --annotations-2012 VOCdevkit/VOC2012/Annotations/
+  ```
+
+  
 
 ### Train
 
