@@ -4,6 +4,8 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 
+plt.style.use('ggplot')
+
 def detect(model, image, threshold, S, device):
     """
     Run detection for inference.
@@ -148,21 +150,20 @@ def cellboxes_to_boxes(out, S=7):
     return all_bboxes
 
 def plot_loss(train_loss, valid_loss):
-    # Loss plots.
-    plt.figure(figsize=(10, 7))
-    plt.plot(
-        train_loss, color='orange', linestyle='-', 
+    figure = plt.figure(figsize=(10, 7), num=1, clear=True)
+    ax = figure.add_subplot()
+    ax.plot(
+        train_loss, color='tab:blue', linestyle='-', 
         label='train loss'
     )
-    plt.plot(
-        valid_loss, color='red', linestyle='-', 
-        label='validataion loss'
+    ax.plot(
+        valid_loss, color='tab:orange', linestyle='-', 
+        label='valid loss'
     )
-    plt.xlabel('Epochs')
-    plt.ylabel('Loss')
-    plt.legend()
-    plt.savefig(f"loss.png")
-    plt.close()
+    ax.set_xlabel('Epochs')
+    ax.set_ylabel('Loss')
+    ax.legend()
+    figure.savefig('loss.png')
 
 def draw_boxes(image, boxes):
     """
