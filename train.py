@@ -46,8 +46,16 @@ print(f"{total_trainable_params:,} training parameters.")
 
 # Loss and optimizer.
 criterion = YOLOLoss(S=S, B=B)
+# Different learning rate for the features and head.
+params = []
+param_dict = dict(model.named_parameters())
+for key, value in param_dict.items():
+    if key.startswith('features'):
+        params += [{'params':[value], 'lr':LEARNING_RATE}]
+    else:
+        params += [{'params':[value], 'lr':LEARNING_RATE*10}]
 optimizer = torch.optim.SGD(
-    model.parameters(), lr=LEARNING_RATE,
+    params, lr=LEARNING_RATE,
     momentum=0.9, weight_decay=0.0005
 )
 
