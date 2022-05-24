@@ -2,7 +2,7 @@ import torch
 import numpy as np
 import argparse
 
-from models.yolov1_vgg11 import load_base_model, load_yolo_vgg11
+from models.create_model import create_model
 from loss import YOLOLoss
 from dataset import DetectionDataset
 from transforms import get_tensor_transform
@@ -25,16 +25,21 @@ parser.add_argument(
     '-w', '--weights', default=None,
     help='path to weights if wanting to resume training'
 )
+parser.add_argument(
+    '-m', '--model', default='yolov1_vgg11', 
+    help='the model to train with, see models/create_model.py for all \
+          available models'
+)
 args = vars(parser.parse_args())
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print(device)
 
-base_model = load_base_model(pretrained=PRETRAINED)
-model = load_yolo_vgg11(base_model, C=C, S=S, B=B).to(device)
+create_model = create_model[args['model']]
+model = create_model(C, S, B, pretrained=True).to(device)
 if args['weights'] is not None:
     print('Loading weights to resume training...')
-    checkpoint = torch.load(args['weights'])
+    checkpoint = torch.load(args['weights'], map_location='device')
     model.load_state_dict(checkpoint)
 print(model)
 # Total parameters and trainable parameters.
@@ -53,11 +58,18 @@ for key, value in param_dict.items():
     if key.startswith('features'):
         params += [{'params':[value], 'lr':LEARNING_RATE}]
     else:
-        params += [{'params':[value], 'lr':LEARNING_RATE*10}]
+        params += [{'params':[value], 'lr':LEARNING_RATE*1}]
+# optimizer = torch.optim.SGD(
+#     params, lr=LEARNING_RATE,
+#     momentum=0.9, weight_decay=0.0005
+# )
 optimizer = torch.optim.SGD(
-    params, lr=LEARNING_RATE,
+    model.parameters(), lr=LEARNING_RATE,
     momentum=0.9, weight_decay=0.0005
 )
+# optimizer = torch.optim.Adam(
+#     params, lr=LEARNING_RATE,
+# )
 
 train_dataset = DetectionDataset(
     image_size=IMAGE_SIZE, 
@@ -97,13 +109,13 @@ if __name__ == '__main__':
             31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
             41, 42, 43, 44, 45, 46, 47, 48, 49, 50
         ], 
-        gamma=1.047128548, verbose=True
+        gamma=1.047128548, verbose=False
     )
-    # To decrease the learning rate at 75 and 105 epochs.
+    # To decrease the learning.
     scheduler_down = MultiStepLR(
         optimizer,
         [160, 195],
-        gamma=0.1, verbose=True
+        gamma=0.1, verbose=False
     )
 
     num_iter = 0
@@ -131,6 +143,7 @@ if __name__ == '__main__':
         print(f"Saving model for epoch {epoch+1}\n")
         torch.save(model.state_dict(),'last.pth')
         scheduler_up.step()
-        # scheduler_down.step()
+        scheduler_down.step()
 
         plot_loss(train_loss, valid_loss)
+    torch.save(model.state_dict(),'last.pth')

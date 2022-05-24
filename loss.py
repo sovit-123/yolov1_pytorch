@@ -144,6 +144,8 @@ if __name__ == '__main__':
     print('Max IoU: ', max_ious) 
     print('Max IoU index:', best_bbox)
 
-    # yolo_loss = YOLOLoss()
-    # loss = yolo_loss(b2, t)
-    # print(f"YOLO loss test => YOLO loss = {loss}")
+    rand_tensor_1 = torch.rand([4, 7, 7, 30])
+    rand_tensor_2 = torch.rand([4, 7, 7, 30])
+    yolo_loss = YOLOLoss()
+    loss = yolo_loss(rand_tensor_1, rand_tensor_1)
+    print(f"YOLO loss test => YOLO loss = {loss}")

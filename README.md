@@ -1,27 +1,18 @@
-# A Simple YOLOV1 Training Pipeline on the PASCAL VOC Data using the PyTorch Framework
+# YOLOV1 Training Pipeline on the PASCAL VOC Data using the PyTorch Framework
 
 
 
 This repository contains YOLOV1 training pipeline on the PASCAL VOC 2007 and 2012 data using the PyTorch framework. **A few points:**
 
-* This respository can be used for understanding the entire YOLOV1 training pipeline, starting from:
-  * Dataset creation.
-  * Model building.
-  * YOLO loss function.
-  * Evaluation.
-  * Prediction/inference on images and videos using the trained model.
-* The code base contains the YOLOV1 backbone (termed as Darknet here onward) and VGG11 backbones as they are the simplest to understand.
-* The code base will be well commented for proper understanding of each part.
 
 
-
-## ***Note: Use this repository/code for any project/learning with/without attribution. Completely OPEN for any use.*** 
+## ***Note: Use this repository/code for any project/learning. A simple reference/attribution to the repository is enough. Completely OPEN for any use.*** 
 
 
 
 ## Steps to Train
 
-### First of All, Download and Extract the Data
+### First of All, Download and Extract the Data (Download to any directory of your choice)
 
 * [Download VOC 2007 trainval from here](http://host.robots.ox.ac.uk/pascal/VOC/voc2007/VOCtrainval_06-Nov-2007.tar).
   * Or `wget http://host.robots.ox.ac.uk/pascal/VOC/voc2007/VOCtrainval_06-Nov-2007.tar` in terminal.
@@ -56,6 +47,8 @@ tar xf VOCtrainval_11-May-2012.tar
   ```
   python prepare_data.py --path my_pacal_voc_data
   ```
+
+  In the above command `my_pacal_voc_data` should contain the `VOCdevkit` directory for the dataset.
 
 * Then execute `prepare_text_labels.py` with correct command line argument paths to the VOC 2007  and 2012  `Annotations` directory. See [`text_labels.py`](https://github.com/sovit-123/yolov1_pytorch_voc07/blob/main/prepare_text_labels.py) to know what the exact path should be. Example command:
 

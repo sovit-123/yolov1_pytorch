@@ -112,23 +112,23 @@ class YOLOVGG11(nn.Module):
         return x
 
 def load_base_model(pretrained=False):
-    vgg11 = VGG11(3, pretrained=pretrained)
+    base_model = VGG11(3, pretrained=pretrained)
     if not pretrained:
         print('Not loading pretrained weights...')
     if pretrained:
         print('Loading pretrained weights...')
-        vgg11.load_state_dict(model_zoo.load_url(
+        base_model.load_state_dict(model_zoo.load_url(
             'https://download.pytorch.org/models/vgg11_bn-6002323d.pth'
         ))
-    return vgg11
+    return base_model
 
-def load_yolo_vgg11(base_model, C, S, B):
-    yolo_vgg11 = YOLOVGG11(base_model, C, S, B)
-    return yolo_vgg11
+def load_yolo_model(base_model, C, S, B):
+    yolo = YOLOVGG11(base_model, C, S, B)
+    return yolo
 
 if __name__ == '__main__':
     vgg11 = load_base_model(pretrained=False)
-    yolo_vgg11 = load_yolo_vgg11(vgg11)
+    yolo_vgg11 = load_yolo_model(vgg11)
     print(yolo_vgg11)
 
     x = torch.rand([1, 3, 448, 448])

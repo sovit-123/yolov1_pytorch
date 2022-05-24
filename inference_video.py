@@ -5,9 +5,9 @@ import pathlib
 import os
 import time
 
-from models.yolov1_vgg11 import load_base_model, load_yolo_vgg11
 from utils import detect, draw_boxes
 from config import S, B, C
+from models.create_model import create_model
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -18,15 +18,24 @@ parser.add_argument(
     '-t', '--threshold', help='confidence threshold to filter detected boxes',
     default=0.25, type=float
 )
+parser.add_argument(
+    '-m', '--model', default='yolov1_vgg', 
+    help='the model to train with, see models/create_model.py for all \
+          available models'
+)
+parser.add_argument(
+    '-w', '--weights', default='best.pth', 
+    help='path to model weight'
+)
 args = vars(parser.parse_args())
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
 # Load model and weights.
-base_model = load_base_model(pretrained=False)
-model = load_yolo_vgg11(base_model, C=C, S=S, B=B)
+create_model = create_model[args['model']]
+model = create_model(C, S, B, pretrained=False).to(device)
 print('Loading trained YOLO model weights...\n')
-checkpoint = torch.load('best.pth')
+checkpoint = torch.load(args['weights'])
 model.load_state_dict(checkpoint)
 model.to(device).eval()
 
