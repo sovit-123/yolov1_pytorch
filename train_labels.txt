@@ -1,1 +1,0 @@
-../input/voc_data//VOCdevkit/VOC2007/JPEGImages/000012.jpg 156 97 351 270 6
