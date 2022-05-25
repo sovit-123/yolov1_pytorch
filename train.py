@@ -11,11 +11,6 @@ from training_utils import train, validate
 from torch.optim.lr_scheduler import StepLR, MultiStepLR
 from config import (
     S, B, C,
-    NUM_EPOCHS, 
-    BATCH_SIZE,
-    LEARNING_RATE, 
-    IMAGE_SIZE, 
-    NUM_WORKERS,
     PRETRAINED
 )
 from utils import plot_loss
@@ -29,6 +24,26 @@ parser.add_argument(
     '-m', '--model', default='yolov1_vgg11', 
     help='the model to train with, see models/create_model.py for all \
           available models'
+)
+parser.add_argument(
+    '-e', '--epochs', default=135, type=int,
+    help='number of epochs to train for'
+)
+parser.add_argument(
+    '-b', '--batch-size', dest='batch_size', default=8,
+    help='batch size for data loader'
+)
+parser.add_argument(
+    '-j', '--workers', default=8,
+    help='parallel workers for data loaders'
+)
+parser.add_argument(
+    '-s', '--image-size', dest='image_size', default=448,
+    help='image size to resize to during data loading'
+)
+parser.add_argument(
+    '-lr', '--learning-rate', dest='learning_rate', default=0.0001,
+    help='default learning rate for optimizer'
 )
 args = vars(parser.parse_args())
 
@@ -56,15 +71,15 @@ params = []
 param_dict = dict(model.named_parameters())
 for key, value in param_dict.items():
     if key.startswith('features'):
-        params += [{'params':[value], 'lr':LEARNING_RATE}]
+        params += [{'params':[value], 'lr':args['learning_rate']}]
     else:
-        params += [{'params':[value], 'lr':LEARNING_RATE*1}]
+        params += [{'params':[value], 'lr':args['learning_rate']*1}]
 # optimizer = torch.optim.SGD(
 #     params, lr=LEARNING_RATE,
 #     momentum=0.9, weight_decay=0.0005
 # )
 optimizer = torch.optim.SGD(
-    model.parameters(), lr=LEARNING_RATE,
+    model.parameters(), lr=args['learning_rate'],
     momentum=0.9, weight_decay=0.0005
 )
 # optimizer = torch.optim.Adam(
@@ -72,14 +87,14 @@ optimizer = torch.optim.SGD(
 # )
 
 train_dataset = DetectionDataset(
-    image_size=IMAGE_SIZE, 
+    image_size=args['image_size'], 
     file='train_labels.txt',
     train=True, 
     transform=get_tensor_transform(),
     S=S, C=C, B=B
 )
 valid_dataset = DetectionDataset(
-    image_size=IMAGE_SIZE, 
+    image_size=args['image_size'], 
     file='2007_test_labels.txt',
     train=False, 
     transform=get_tensor_transform(),
@@ -91,12 +106,12 @@ print(f"Number of validation samples: {len(valid_dataset)}")
 
 if __name__ == '__main__':
     train_loader = DataLoader(
-        dataset=train_dataset, batch_size=BATCH_SIZE,
-        shuffle=True, num_workers=NUM_WORKERS
+        dataset=train_dataset, batch_size=args['batch_size'],
+        shuffle=True, num_workers=args['workers']
     )
     valid_loader = DataLoader(
-        dataset=valid_dataset, batch_size=BATCH_SIZE,
-        shuffle=False, num_workers=NUM_WORKERS
+        dataset=valid_dataset, batch_size=args['batch_size'],
+        shuffle=False, num_workers=args['workers']
     )
 
     # To increase the learning rate slowly till 50 epochs.
@@ -121,12 +136,12 @@ if __name__ == '__main__':
     num_iter = 0
     best_valid_loss = np.inf
     train_loss, valid_loss = [], []
-    for epoch in range(NUM_EPOCHS):
+    for epoch in range(args['epochs']):
         
         # Training.
         training_loss = train(
             model, train_loader, criterion, 
-            optimizer, epoch, NUM_EPOCHS, device
+            optimizer, epoch, args['epochs'], device
         )
 
         # Validation.
