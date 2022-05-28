@@ -30,7 +30,7 @@ parser.add_argument(
     help='number of epochs to train for'
 )
 parser.add_argument(
-    '-b', '--batch-size', dest='batch_size', default=8,
+    '-b', '--batch-size', dest='batch_size', default=8, type=int,
     help='batch size for data loader'
 )
 parser.add_argument(
@@ -157,8 +157,8 @@ if __name__ == '__main__':
             torch.save(model.state_dict(),'best.pth')   
         print(f"Saving model for epoch {epoch+1}\n")
         torch.save(model.state_dict(),'last.pth')
-        scheduler_up.step()
-        scheduler_down.step()
+        # scheduler_up.step()
+        # scheduler_down.step()
 
         plot_loss(train_loss, valid_loss)
     torch.save(model.state_dict(),'last.pth')
