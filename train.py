@@ -30,7 +30,7 @@ parser.add_argument(
     help='number of epochs to train for'
 )
 parser.add_argument(
-    '-b', '--batch-size', dest='batch_size', default=8, type=int,
+    '-b', '--batch-size', dest='batch_size', default=4, type=int,
     help='batch size for data loader'
 )
 parser.add_argument(
@@ -45,16 +45,20 @@ parser.add_argument(
     '-lr', '--learning-rate', dest='learning_rate', default=0.0001,
     help='default learning rate for optimizer'
 )
+parser.add_argument(
+    '-pt', '--pretrained', action='store_true', 
+    help='whether to use pretrained model or not'
+)
 args = vars(parser.parse_args())
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print(device)
 
 create_model = create_model[args['model']]
-model = create_model(C, S, B, pretrained=True).to(device)
+model = create_model(C, S, B, pretrained=args['pretrained']).to(device)
 if args['weights'] is not None:
     print('Loading weights to resume training...')
-    checkpoint = torch.load(args['weights'], map_location='device')
+    checkpoint = torch.load(args['weights'], map_location=device)
     model.load_state_dict(checkpoint)
 print(model)
 # Total parameters and trainable parameters.

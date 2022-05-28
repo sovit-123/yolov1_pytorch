@@ -19,7 +19,7 @@ parser.add_argument(
     default=0.25, type=float
 )
 parser.add_argument(
-    '-m', '--model', default='yolov1_vgg', 
+    '-m', '--model', default='yolovv1_vgg11', 
     help='the model to train with, see models/create_model.py for all \
           available models'
 )
