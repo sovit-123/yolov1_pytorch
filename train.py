@@ -34,7 +34,7 @@ parser.add_argument(
     help='batch size for data loader'
 )
 parser.add_argument(
-    '-j', '--workers', default=8,
+    '-j', '--workers', default=8, type=int,
     help='parallel workers for data loaders'
 )
 parser.add_argument(
@@ -42,7 +42,7 @@ parser.add_argument(
     help='image size to resize to during data loading'
 )
 parser.add_argument(
-    '-lr', '--learning-rate', dest='learning_rate', default=0.0001,
+    '-lr', '--learning-rate', dest='learning_rate', default=0.0001, type=float,
     help='default learning rate for optimizer'
 )
 parser.add_argument(
