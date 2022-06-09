@@ -1,6 +1,8 @@
+from matplotlib.pyplot import draw
 import torch.utils.data as data
 import torch
 import cv2
+import numpy as np
 
 class DetectionDataset(data.Dataset):
     def __init__(self, image_size, file, train, transform, S, C, B):
@@ -103,16 +105,38 @@ class DetectionDataset(data.Dataset):
 
 if __name__ == '__main__':
     import transforms
+    from utils import cellboxes_to_boxes, yolo2bbox, draw_boxes
+    #####################################
+    # Sanity Check for Image and Labels #
+    #####################################
     transform = transforms.get_tensor_transform()
     train_dataset = DetectionDataset(
         image_size=448, file='train_labels.txt', 
         train=True, transform=transform, S=7, C=20, B=2
     )
-    
     loader = torch.utils.data.DataLoader(
         dataset=train_dataset, batch_size=1,
         shuffle=True, num_workers=1
     )
+    for image, labels in loader:
+        image = torch.permute(torch.squeeze(image, 0), (1, 2, 0))
+        print(image.shape, labels.shape)
+        image_np = np.ascontiguousarray(image)
+        cv2.imshow('Image', image_np)
+        cv2.waitKey(0)
+
+        boxes = cellboxes_to_boxes(labels, 7)
+        corner_list = []
+        score_list = []
+        for i, bbox in enumerate(boxes[0]):
+            x1, y1, x2, y2 = yolo2bbox(bbox[2:], 448, 448)
+            # Check that all coordinates are > 0 and score > threshold.
+            corner_list.append([x1, y1, x2, y2])
+            score_list.append(bbox[1])
+
+        final_image = draw_boxes(image_np, corner_list)
+        cv2.imshow('Image', final_image)
+        cv2.waitKey(0)
 
     def batch_mean_and_sd(loader):
         cnt = 0

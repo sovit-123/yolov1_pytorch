@@ -122,8 +122,8 @@ def load_base_model(pretrained=False):
         ))
     return base_model
 
-def load_yolo_model(base_model, C, S, B):
-    yolo = YOLOVGG11(base_model, C, S, B)
+def load_yolo_model(base_model, C=20, S=7, B=2):
+    yolo = YOLOVGG11(base_model, C=C, S=S, B=B)
     return yolo
 
 if __name__ == '__main__':
