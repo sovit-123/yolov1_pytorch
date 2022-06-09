@@ -158,9 +158,9 @@ if __name__ == '__main__':
             best_valid_loss = validation_loss
             print(f"\nNew best validation loss: {best_valid_loss}")
             print('Saving best model...')
-            # torch.save(model.state_dict(),'best.pth')   
+            torch.save(model.state_dict(),'best.pth')   
         print(f"Saving model for epoch {epoch+1}\n")
-        # torch.save(model.state_dict(),'last.pth')
+        torch.save(model.state_dict(),'last.pth')
         # scheduler_up.step()
         # scheduler_down.step()
 
