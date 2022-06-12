@@ -28,7 +28,7 @@ def detect(model, image, threshold, S, device):
     height, width, _ = orig_image.shape
     image = cv2.resize(image, (448, 448))
     image = np.transpose(image, (2, 0, 1))
-    image = torch.tensor(image, dtype=torch.float32)
+    image = torch.tensor(image, dtype=torch.float32)/255.
     image = torch.unsqueeze(image, axis=0)
     outputs = model(image.to(device))
     bboxes = cellboxes_to_boxes(outputs, S=S)
