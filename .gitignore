@@ -1,4 +1,5 @@
 backup/
+valid_results/
 inference_data/*.jpg
 inference_data/*.png
 inference_data/*.mp4

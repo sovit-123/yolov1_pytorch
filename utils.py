@@ -4,6 +4,8 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 
+from config import S
+
 plt.style.use('ggplot')
 
 def detect(model, image, threshold, S, device):
@@ -206,6 +208,35 @@ def yolo2bbox(bboxes, width, height):
     xmax, ymax = (bboxes[0]+bboxes[2]/2) * width, (bboxes[1]+bboxes[3]/2) * height
     return xmin, ymin, xmax, ymax
 
+def check_valid_loop(outputs, images, epoch, i):
+    """
+    Saves results from the validation loop during the training phase.
+    """
+    corner_list = [] # List to store coordinates in x1, x2, y1, y2 format.
+    score_list = [] # List to store corresponding scores.
+    image = images[0]
+    height, width = image.shape[1:]
+    threshold = 0.25
+    bboxes = cellboxes_to_boxes(outputs, S=S)
+    for i, bbox in enumerate(bboxes[0]):
+        x1, y1, x2, y2 = yolo2bbox(bbox[2:], width, height)
+        # Check that all coordinates are > 0 and score > threshold.
+        if x1 > 0 and x2 > 0 and y1 > 0 and y2 > 0 and bbox[1] > threshold:
+            corner_list.append([x1, y1, x2, y2])
+            score_list.append(bbox[1])
+    if len(corner_list) > 0:
+        nms_indices = torchvision.ops.nms(
+            torch.tensor(corner_list), 
+            torch.tensor(score_list),
+            iou_threshold=0.5
+        )
+        nms_boxes = [corner_list[i] for i in nms_indices]
+        final_scores = [score_list[i] for i in nms_indices]
+        image_1 = np.array(torch.permute(images[0].cpu(), (1, 2, 0)))
+        result = draw_boxes(image_1, corner_list)
+        cv2.imwrite(f"valid_results/image_e{epoch}_iter{i}.png", result*255.)
+        # cv2.imshow('Result', result)
+        # cv2.waitKey(0)
 
 def main():
     boxes_preds = torch.tensor([200, 300, 400, 500])

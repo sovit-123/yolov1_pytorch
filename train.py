@@ -1,6 +1,7 @@
 import torch
 import numpy as np
 import argparse
+import os
 
 from models.create_model import create_model
 from loss import YOLOLoss
@@ -11,7 +12,6 @@ from training_utils import train, validate
 from torch.optim.lr_scheduler import StepLR, MultiStepLR
 from config import (
     S, B, C,
-    PRETRAINED
 )
 from utils import plot_loss
 
@@ -109,6 +109,7 @@ print(f"Number of training samples: {len(train_dataset)}")
 print(f"Number of validation samples: {len(valid_dataset)}")
 
 if __name__ == '__main__':
+    os.makedirs('valid_results', exist_ok=True)
     train_loader = DataLoader(
         dataset=train_dataset, batch_size=args['batch_size'],
         shuffle=True, num_workers=args['workers']
@@ -128,13 +129,13 @@ if __name__ == '__main__':
             31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
             41, 42, 43, 44, 45, 46, 47, 48, 49, 50
         ], 
-        gamma=1.047128548, verbose=False
+        gamma=1.047128548, verbose=True
     )
     # To decrease the learning.
     scheduler_down = MultiStepLR(
         optimizer,
-        [160, 195],
-        gamma=0.1, verbose=False
+        [108, 121],
+        gamma=0.1, verbose=True
     )
 
     num_iter = 0
@@ -149,7 +150,7 @@ if __name__ == '__main__':
         )
 
         # Validation.
-        validation_loss = validate(model, valid_loader, criterion, device)
+        validation_loss = validate(model, valid_loader, criterion, device, epoch)
 
         train_loss.append(training_loss)
         valid_loss.append(validation_loss)
@@ -162,7 +163,7 @@ if __name__ == '__main__':
         print(f"Saving model for epoch {epoch+1}\n")
         torch.save(model.state_dict(),'last.pth')
         # scheduler_up.step()
-        # scheduler_down.step()
+        scheduler_down.step()
 
         plot_loss(train_loss, valid_loss)
     torch.save(model.state_dict(),'last.pth')

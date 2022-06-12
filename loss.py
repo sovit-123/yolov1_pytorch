@@ -146,6 +146,7 @@ if __name__ == '__main__':
 
     rand_tensor_1 = torch.rand([4, 7, 7, 30])
     rand_tensor_2 = torch.rand([4, 7, 7, 30])
+    rand_1_reshaped = rand_tensor_1.view(4, 1470)
     yolo_loss = YOLOLoss()
-    loss = yolo_loss(rand_tensor_1, rand_tensor_1)
+    loss = yolo_loss(rand_1_reshaped, rand_tensor_1)
     print(f"YOLO loss test => YOLO loss = {loss}")

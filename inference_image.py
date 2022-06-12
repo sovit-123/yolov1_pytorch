@@ -24,15 +24,20 @@ parser.add_argument(
     '-w', '--weights', default='best.pth', 
     help='path to model weight'
 )
+parser.add_argument(
+    '-d', '--device', 
+    default=torch.device('cuda' if torch.cuda.is_available() else 'cpu'),
+    help='computing device'
+)
 args = vars(parser.parse_args())
 
-device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+device = args['device']
 
 # Load model and weights.
 create_model = create_model[args['model']]
 model = create_model(C, S, B, pretrained=False).to(device)
 print('Loading trained YOLO model weights...\n')
-checkpoint = torch.load(args['weights'])
+checkpoint = torch.load(args['weights'], map_location=args['device'])
 model.load_state_dict(checkpoint)
 model.to(device).eval()
 
