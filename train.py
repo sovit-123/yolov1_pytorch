@@ -11,9 +11,9 @@ from torch.utils.data import DataLoader
 from training_utils import train, validate
 from torch.optim.lr_scheduler import StepLR, MultiStepLR
 from config import (
-    S, B, C,
+    S, B, C, CLASSES
 )
-from utils import plot_loss
+from utils import plot_loss, set_training_dir
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -78,17 +78,14 @@ for key, value in param_dict.items():
         params += [{'params':[value], 'lr':args['learning_rate']}]
     else:
         params += [{'params':[value], 'lr':args['learning_rate']*1}]
-# optimizer = torch.optim.SGD(
-#     params, lr=LEARNING_RATE,
-#     momentum=0.9, weight_decay=0.0005
-# )
+
 optimizer = torch.optim.SGD(
-    model.parameters(), lr=args['learning_rate'],
-    momentum=0.9, weight_decay=0.0005
+    model.parameters(), 
+    lr=args['learning_rate'],
+    momentum=0.9, 
+    weight_decay=0.0005, 
+    nesterov=True
 )
-# optimizer = torch.optim.Adam(
-#     params, lr=LEARNING_RATE,
-# )
 
 train_dataset = DetectionDataset(
     image_size=args['image_size'], 
@@ -109,7 +106,17 @@ print(f"Number of training samples: {len(train_dataset)}")
 print(f"Number of validation samples: {len(valid_dataset)}")
 
 if __name__ == '__main__':
-    os.makedirs('valid_results', exist_ok=True)
+    # For same annotation colors each time.
+    np.random.seed(42)
+    # Create random tuples of RGB colors as per the number of classes.
+    colors = np.random.uniform(0, 255, size=(C, 3))
+    # Create the result directory for the current training.
+    OUT_DIR = set_training_dir()
+    # Create directory to save results from validation loop.
+    os.makedirs(
+        os.path.join(OUT_DIR, 'valid_results'),
+        exist_ok=True
+    )
     train_loader = DataLoader(
         dataset=train_dataset, batch_size=args['batch_size'],
         shuffle=True, num_workers=args['workers']
@@ -134,7 +141,8 @@ if __name__ == '__main__':
     # To decrease the learning.
     scheduler_down = MultiStepLR(
         optimizer,
-        [108, 121],
+        # [108, 125],
+        [108],
         gamma=0.1, verbose=True
     )
 
@@ -150,7 +158,16 @@ if __name__ == '__main__':
         )
 
         # Validation.
-        validation_loss = validate(model, valid_loader, criterion, device, epoch)
+        validation_loss = validate(
+            model, 
+            valid_loader, 
+            criterion, 
+            device, 
+            epoch, 
+            OUT_DIR,
+            CLASSES, 
+            colors
+        )
 
         train_loss.append(training_loss)
         valid_loss.append(validation_loss)
@@ -159,11 +176,21 @@ if __name__ == '__main__':
             best_valid_loss = validation_loss
             print(f"\nNew best validation loss: {best_valid_loss}")
             print('Saving best model...')
-            torch.save(model.state_dict(),'best.pth')   
+            torch.save(
+                model.state_dict(), 
+                os.path.join(OUT_DIR, 'best.pth')
+            )   
         print(f"Saving model for epoch {epoch+1}\n")
-        torch.save(model.state_dict(),'last.pth')
+        torch.save(
+            model.state_dict(),
+            os.path.join(OUT_DIR, 'last.pth')
+        )
         # scheduler_up.step()
         scheduler_down.step()
 
-        plot_loss(train_loss, valid_loss)
-    torch.save(model.state_dict(),'last.pth')
+        plot_loss(train_loss, valid_loss, OUT_DIR)
+    # Save the model one last time after training finishes.
+    torch.save(
+        model.state_dict(),
+        os.path.join(OUT_DIR,'last.pth')
+    )

@@ -28,7 +28,16 @@ def train(
             )
     return total_loss/len(data_loader)
 
-def validate(model, data_loader, criterion, device='cuda', epoch=None):
+def validate(
+    model, 
+    data_loader, 
+    criterion, 
+    device='cuda', 
+    epoch=None, 
+    out_dir=None,
+    class_names=None,
+    colors=None
+):
     print('VALIDATING')
     validation_loss = 0.0
     model.eval()
@@ -36,7 +45,17 @@ def validate(model, data_loader, criterion, device='cuda', epoch=None):
         images, target = images.to(device), target.to(device)
         
         pred = model(images)
-        check_valid_loop(pred, images, epoch, i)
+        # Save one validation result from the first batch each epoch.
+        if i == 0:
+            check_valid_loop(
+                pred, 
+                images, 
+                epoch, 
+                i, 
+                out_dir,
+                class_names,
+                colors
+            )
         loss = criterion(pred,target)
         validation_loss += loss.item()
         if (i+1) % 50 == 0:

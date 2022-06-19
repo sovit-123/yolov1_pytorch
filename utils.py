@@ -3,6 +3,7 @@ import torchvision
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
+import os
 
 from config import S
 
@@ -24,6 +25,7 @@ def detect(model, image, threshold, S, device):
     """
     corner_list = [] # List to store coordinates in x1, x2, y1, y2 format.
     score_list = [] # List to store corresponding scores.
+    class_list = [] # List to store corresponding classes.
     orig_image = image.copy()
     height, width, _ = orig_image.shape
     image = cv2.resize(image, (448, 448))
@@ -39,6 +41,7 @@ def detect(model, image, threshold, S, device):
         if x1 > 0 and x2 > 0 and y1 > 0 and y2 > 0 and bbox[1] > threshold:
             corner_list.append([x1, y1, x2, y2])
             score_list.append(bbox[1])
+            class_list.append(bbox[0])
     if len(corner_list) > 0:
         nms_indices = torchvision.ops.nms(
             torch.tensor(corner_list), 
@@ -47,9 +50,10 @@ def detect(model, image, threshold, S, device):
         )
         nms_boxes = [corner_list[i] for i in nms_indices]
         final_scores = [score_list[i] for i in nms_indices]
-        return nms_boxes, final_scores
+        final_classes=  [class_list[i] for i in nms_indices]
+        return nms_boxes, final_scores, final_classes
     else:
-        return [], []
+        return [], [], []
 
 def intersection_over_union(
     boxes_preds, boxes_labels, 
@@ -151,7 +155,7 @@ def cellboxes_to_boxes(out, S=7):
 
     return all_bboxes
 
-def plot_loss(train_loss, valid_loss):
+def plot_loss(train_loss, valid_loss, out_dir):
     figure = plt.figure(figsize=(10, 7), num=1, clear=True)
     ax = figure.add_subplot()
     ax.plot(
@@ -165,9 +169,9 @@ def plot_loss(train_loss, valid_loss):
     ax.set_xlabel('Epochs')
     ax.set_ylabel('Loss')
     ax.legend()
-    figure.savefig('loss.png')
+    figure.savefig(os.path.join(out_dir, 'loss.png'))
 
-def draw_boxes(image, boxes):
+def draw_boxes(image, boxes, class_labels, class_names, colors):
     """
     Draw bounding boxes around an image.
 
@@ -181,14 +185,25 @@ def draw_boxes(image, boxes):
     """
     image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
     # Get the original image height and width.
-    for box in boxes:
+    for i, box in enumerate(boxes):
+        color = colors[int(class_labels[i])][::-1]
+        class_name = class_names[int(class_labels[i])]
         x_min, y_min, x_max, y_max = box
         cv2.rectangle(
             image,
             (int(x_min), int(y_min)),
             (int(x_max), int(y_max)),
-            (0, 0, 255),
+            color,
             1, cv2.LINE_AA
+        )
+        cv2.putText(
+            image,
+            str(class_name),
+            (int(x_min), int(y_min)-10),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            1, color=color,
+            thickness=1,
+            lineType=cv2.LINE_AA
         )
     return image
 
@@ -208,12 +223,21 @@ def yolo2bbox(bboxes, width, height):
     xmax, ymax = (bboxes[0]+bboxes[2]/2) * width, (bboxes[1]+bboxes[3]/2) * height
     return xmin, ymin, xmax, ymax
 
-def check_valid_loop(outputs, images, epoch, i):
+def check_valid_loop(
+    outputs, 
+    images, 
+    epoch, 
+    i, 
+    out_dir, 
+    class_names,
+    colors
+):
     """
     Saves results from the validation loop during the training phase.
     """
     corner_list = [] # List to store coordinates in x1, x2, y1, y2 format.
     score_list = [] # List to store corresponding scores.
+    class_list = [] # List to store corresponding classes.
     image = images[0]
     height, width = image.shape[1:]
     threshold = 0.25
@@ -224,6 +248,7 @@ def check_valid_loop(outputs, images, epoch, i):
         if x1 > 0 and x2 > 0 and y1 > 0 and y2 > 0 and bbox[1] > threshold:
             corner_list.append([x1, y1, x2, y2])
             score_list.append(bbox[1])
+            class_list.append(bbox[0])
     if len(corner_list) > 0:
         nms_indices = torchvision.ops.nms(
             torch.tensor(corner_list), 
@@ -232,11 +257,40 @@ def check_valid_loop(outputs, images, epoch, i):
         )
         nms_boxes = [corner_list[i] for i in nms_indices]
         final_scores = [score_list[i] for i in nms_indices]
+        final_classes=  [class_list[i] for i in nms_indices]
         image_1 = np.array(torch.permute(images[0].cpu(), (1, 2, 0)))
-        result = draw_boxes(image_1, corner_list)
-        cv2.imwrite(f"valid_results/image_e{epoch}_iter{i}.png", result*255.)
+        result = draw_boxes(
+            image_1, 
+            nms_boxes, 
+            final_classes,
+            class_names, 
+            colors
+        )
+        cv2.imwrite(
+            os.path.join(out_dir, 'valid_results', f"image_e{epoch}_iter{i}.png"), 
+            result*255.
+        )
         # cv2.imshow('Result', result)
         # cv2.waitKey(0)
+
+def set_training_dir(dir_name=None):
+    """
+    This functions counts the number of training directories already present
+    and creates a new one in `outputs/training/`. 
+    And returns the directory path.
+    """
+    if not os.path.exists('outputs/training'):
+        os.makedirs('outputs/training')
+    if dir_name:
+        new_dir_name = f"outputs/training/{dir_name}"
+        os.makedirs(new_dir_name, exist_ok=True)
+        return new_dir_name
+    else:
+        num_train_dirs_present = len(os.listdir('outputs/training/'))
+        next_dir_num = num_train_dirs_present + 1
+        new_dir_name = f"outputs/training/res_{next_dir_num}"
+        os.makedirs(new_dir_name, exist_ok=True)
+        return new_dir_name
 
 def main():
     boxes_preds = torch.tensor([200, 300, 400, 500])

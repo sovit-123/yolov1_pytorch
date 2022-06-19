@@ -8,8 +8,8 @@ def return_yolov1(C, S, B, pretrained=True):
 
 def return_mini_vgg(C, S, B, pretrained=True):
     print('Loading Mini VGG model...')
-    base_model = mini_vgg.load_base_model(pretrained=pretrained)
-    model = mini_vgg.load_yolo_model(base_model, C=C, S=S, B=B)
+    base_model = yolov1_mini_vgg.load_base_model(pretrained=pretrained)
+    model = yolov1_mini_vgg.load_yolo_model(base_model, C=C, S=S, B=B)
     return model
 
 def return_yolov1_vgg11(C, S, B, pretrained=True):
@@ -20,6 +20,6 @@ def return_yolov1_vgg11(C, S, B, pretrained=True):
 
 create_model = {
     'yolov1': return_yolov1,
-    'mini_vgg': return_mini_vgg,
+    'yolov1_mini_vgg': return_mini_vgg,
     'yolov1_vgg11': return_yolov1_vgg11,
 }
